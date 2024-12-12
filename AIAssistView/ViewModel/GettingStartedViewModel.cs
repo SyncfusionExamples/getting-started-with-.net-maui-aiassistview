@@ -20,6 +20,7 @@ namespace GettingStarted
         private List<List<string>> suggestionlist = new List<List<string>>();
         private AzureAIService azureAIService;
         private Thickness headerPadding;
+        private bool cancelResponse;
         #endregion
 
         #region Constructor
@@ -33,6 +34,7 @@ namespace GettingStarted
             this.RetryCommand = new Command<object>(ExecuteRetryCommand);
             this.AssistViewRequestCommand = new Command<object>(ExecuteRequestCommand);
             this.HeaderItemTappedCommand = new Command(HeaderItemTapCommand);
+            this.StopRespondingCommand = new Command(ExecuteStopResponding);
         }
         #endregion
 
@@ -56,6 +58,7 @@ namespace GettingStarted
         public ICommand RetryCommand { get; set; }
         public ICommand AssistViewRequestCommand { get; set; }
         public ICommand HeaderItemTappedCommand { get; set; }
+        public ICommand StopRespondingCommand { get; set; }
 
         public ObservableCollection<GettingStartedModel> HeaderInfoCollection
         {
@@ -90,6 +93,19 @@ namespace GettingStarted
             set { headerPadding = value; RaisePropertyChanged("HeaderPadding"); }
         }
 
+        public bool CancelResponse
+        {
+            get
+            {
+                return cancelResponse;
+            }
+            set
+            {
+                cancelResponse = value;
+                RaisePropertyChanged(nameof(CancelResponse));
+            }
+        }
+
         private async void HeaderItemTapCommand(object obj)
         {
             AssistItem request = new AssistItem() { Text = (obj as Label).Text, IsRequested = true };
@@ -113,7 +129,20 @@ namespace GettingStarted
         private async void ExecuteRetryCommand(object obj)
         {
             var request = (obj as AssistItem).RequestItem;
+            IAssistItem item = (obj as AssistItem).RequestItem as IAssistItem;
+            if (item != null)
+            {
+                request = item;
+            }
             await this.GetResult(request).ConfigureAwait(true);
+        }
+
+        private void ExecuteStopResponding()
+        {
+            this.CancelResponse = true;
+            AssistItem responseItem = new AssistItem() { Text = "You canceled the response" };
+            responseItem.ShowAssistItemFooter = false;
+            this.AssistItems.Add(responseItem);
         }
 
         private void GetHeaderInfo()
@@ -140,10 +169,15 @@ namespace GettingStarted
                 var userAIPrompt = this.GetUserAIPrompt(request.Text);
                 var response = await azureAIService!.GetResultsFromAI(request.Text, userAIPrompt).ConfigureAwait(true);
                 response = response.Replace("\n", "<br>");
-                AssistItem responseItem = new AssistItem() { Text = response };
-                responseItem.RequestItem = inputQuery;
-                this.AssistItems.Add(responseItem);
+                if (!CancelResponse)
+                {
+                    AssistItem responseItem = new AssistItem() { Text = response };
+                    responseItem.RequestItem = inputQuery;
+                    this.AssistItems.Add(responseItem);
+                }
             }
+
+            this.CancelResponse = false;
         }
 
         private string GetUserAIPrompt(string userPrompt)
@@ -168,10 +202,15 @@ namespace GettingStarted
                 await Task.Delay(1000).ConfigureAwait(true);
                 var suggestion = this.GetSuggestion(request.Text);
                 await Task.Delay(1000).ConfigureAwait(true);
-                AssistItem responseItem = new AssistItem() { Text = response, Suggestion = suggestion };
-                responseItem.RequestItem = inputQuery;
-                this.AssistItems.Add(responseItem);
+                if (!CancelResponse)
+                {
+                    AssistItem responseItem = new AssistItem() { Text = response, Suggestion = suggestion };
+                    responseItem.RequestItem = inputQuery;
+                    this.AssistItems.Add(responseItem);
+                }
             }
+
+            this.CancelResponse = false;
         }
 
         private void GenerateSuggestions()

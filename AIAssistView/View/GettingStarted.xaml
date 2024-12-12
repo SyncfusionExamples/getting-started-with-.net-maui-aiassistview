@@ -76,7 +76,8 @@
                              AssistItems="{Binding AssistItems}" 
                              ItemCopyCommand="{Binding CopyCommand}"
                              RequestCommand="{Binding AssistViewRequestCommand}"
-                             ItemRetryCommand="{Binding RetryCommand}">
+                             ItemRetryCommand="{Binding RetryCommand}"
+                             StopRespondingCommand="{Binding StopRespondingCommand}">
                 </aiAssist:SfAIAssistView>
             </Grid>
         </Border>
