@@ -5,8 +5,11 @@
         public App()
         {
             InitializeComponent();
+        }
 
-            MainPage = new GettingStarted();
+        protected override Window CreateWindow(IActivationState? activationState)
+        {
+            return new Window(new GettingStarted());
         }
     }
 }
