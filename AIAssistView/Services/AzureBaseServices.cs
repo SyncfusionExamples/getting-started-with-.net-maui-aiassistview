@@ -1,6 +1,6 @@
-﻿using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel;
-
+﻿using Azure;
+using Azure.AI.OpenAI;
+using Microsoft.Extensions.AI;
 
 namespace GettingStarted
 {
@@ -26,22 +26,19 @@ namespace GettingStarted
         /// <summary>
         /// The API key
         /// </summary>
-        private const string key = "API key";
-
-        /// <summary>
-        /// The chat completion service
-        /// </summary>
-        private IChatCompletionService? chatCompletions;
+        private const string key = "API_key";
 
         /// <summary>
         /// The kernal
         /// </summary>
-        private Kernel? kernel;
+
+        private IChatClient? client;
+
 
         /// <summary>
         /// The chat histroy
         /// </summary>
-        private ChatHistory? chatHistory;
+        private string? chatHistory;
 
         private static bool isCredentialValid = false;
 
@@ -51,13 +48,15 @@ namespace GettingStarted
 
         #endregion
 
+        #region Constructor
         public AzureBaseService()
         {
             ValidateCredential();
         }
+        #endregion
 
         #region Properties
-        public ChatHistory? ChatHistory
+        public string? ChatHistory
         {
             get
             {
@@ -69,30 +68,18 @@ namespace GettingStarted
             }
         }
 
-        public IChatCompletionService? ChatCompletions
-        {
-            get
-            {
-                return chatCompletions;
-            }
-            set
-            {
-                chatCompletions = value;
-            }
-        }
-
         /// <summary>
         /// Gets or sets a value indicating the kernal object
         /// </summary>
-        public Kernel? Kernel
+        public IChatClient? Client
         {
             get
             {
-                return kernel;
+                return client;
             }
             set
             {
-                kernel = value;
+                client = value;
             }
         }
 
@@ -146,11 +133,10 @@ namespace GettingStarted
             try
             {
                 // Initialize the OpenAI client for creadential check.
-                if (ChatHistory != null && chatCompletions != null)
+                if (Client != null)
                 {
                     // test the semantic kernal with message.
-                    ChatHistory.AddSystemMessage("Hello, Test Check");
-                    await chatCompletions.GetChatMessageContentAsync(chatHistory: ChatHistory, kernel: kernel);
+                    await Client.GetResponseAsync("Hello, Test Check");
                 }
             }
             catch (Exception)
@@ -183,15 +169,22 @@ namespace GettingStarted
         /// </summary>
         private void GetAzureOpenAIKernal()
         {
-            // Create the chat history
-            chatHistory = new ChatHistory();
-            var builder = Kernel.CreateBuilder().AddAzureOpenAIChatCompletion(deploymentName, endpoint, key);
+            try
+            {
+                var client = new AzureOpenAIClient(
+                    new Uri(endpoint),
+                    new AzureKeyCredential(key)
+                )
+                .GetChatClient(deploymentName)
+                .AsIChatClient();
 
-            // Get the kernal from build
-            kernel = builder.Build();
+                this.client = client;
 
-            //Get the chat completions from kernal
-            chatCompletions = kernel.GetRequiredService<IChatCompletionService>();
+            }
+            catch (Exception)
+            {
+                ShowAlertAsync();
+            }
         }
         #endregion
 
@@ -217,6 +210,7 @@ namespace GettingStarted
         #endregion
     }
 
+    #region AzureAIService
     public class AzureAIService : AzureBaseService
     {
         public AzureAIService()
@@ -226,30 +220,21 @@ namespace GettingStarted
 
         public void InitializeClient()
         {
-            if (IsCredentialValid && ChatHistory != null)
+            if (IsCredentialValid && Client != null)
             {
-                ChatHistory.Clear();
-                ChatHistory.AddSystemMessage("You are a helpful, intelligent and conversational assistant that can assit with a wide variety of topics.");
-
+               ChatHistory = ChatHistory + "You are a helpful, intelligent and conversational assistant that can assit with a wide variety of topics.";
             }
         }
 
         internal async Task<string> GetResultsFromAI(string userPrompt, string userAIPrompt)
         {
-            if (ChatCompletions != null && ChatHistory != null)
+            if (IsCredentialValid && Client != null)
             {
                 try
                 {
-                    if (ChatHistory.Count > 5)
-                    {
-                        //Remove the message history to avoid exceeding the token limit
-                        ChatHistory.RemoveRange(0, 2);
-                    }
-
-                    ChatHistory.AddUserMessage(userAIPrompt);
-
-                    var response = await ChatCompletions.GetChatMessageContentAsync(chatHistory: ChatHistory, kernel: Kernel);
-                    return response.ToString();
+                    ChatHistory = ChatHistory + userAIPrompt;
+                    var chatresponse = await Client.GetResponseAsync(userPrompt);
+                    return chatresponse.ToString();
                 }
                 catch
                 {
@@ -268,16 +253,22 @@ namespace GettingStarted
         #region Offline Data generation
         internal string GetSolutionToPrompt(string prompt)
         {
-            prompt = prompt.ToLower();
-            for (int i = 0; i < promptRequest.Count(); i++)
+            if (!string.IsNullOrWhiteSpace(prompt))
             {
-                if (prompt.Equals(promptRequest[i]))
+                prompt = prompt.ToLower();
+
+                for (int i = 0; i < promptRequest.Count(); i++)
                 {
-                    return promptResponseHtml[i];
+                    if (prompt.Equals(promptRequest[i]))
+                    {
+                        return promptResponseHtml[i];
+                    }
                 }
             }
-            return "Please connect to your preferred AI service for real-time queries.";
+                return "Please connect to your preferred AI service for real-time queries.";
+
         }
+
         #endregion
 
         #region Prompts
@@ -323,4 +314,6 @@ namespace GettingStarted
 
         #endregion
     }
+
+    #endregion
 }
