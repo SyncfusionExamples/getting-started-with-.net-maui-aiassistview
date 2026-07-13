@@ -16,7 +16,7 @@
         <ResourceDictionary>
             <DataTemplate x:Key="headerTemplate">
                 <VerticalStackLayout Padding="{Binding HeaderPadding}">
-                    <Grid RowDefinitions="45,30,Auto" RowSpacing="10">
+                    <Grid RowDefinitions="45,30" RowSpacing="10">
                         <Border BackgroundColor="#6750A4"  Stroke="#CAC4D0" HorizontalOptions="Center" >
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="12"/>
@@ -24,7 +24,7 @@
                             <Label Text="&#xe7e1;" FontSize="24" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontFamily="MauiSampleFontIcon" TextColor="White" HeightRequest="45" WidthRequest="45" HorizontalOptions="Center" />
                         </Border>
                         <Label Text="Ask AI Anything!" HorizontalOptions="Center" Grid.Row="1" FontFamily="Roboto-Regular" FontSize="16"/>
-                        <FlexLayout x:Name="headerlayout" BindableLayout.ItemsSource="{Binding HeaderInfoCollection}" Grid.Row="2" Wrap="Wrap" JustifyContent="Center" Direction="Row" >
+                        <!--<FlexLayout x:Name="headerlayout" BindableLayout.ItemsSource="{Binding HeaderInfoCollection}" Grid.Row="2" Wrap="Wrap" JustifyContent="Center" Direction="Row" >
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate>
                                     <Grid RowDefinitions="*,Auto,10" Padding="10">
@@ -46,7 +46,7 @@
                                     </Grid>
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
-                        </FlexLayout>
+                        </FlexLayout>-->
                     </Grid>
                 </VerticalStackLayout>
             </DataTemplate>
@@ -69,10 +69,9 @@
                     Value="20" />
                 </OnPlatform>
             </Border.Margin>
-            <Grid>
+            <Grid WidthRequest="600">
                 <aiAssist:SfAIAssistView x:Name="sfAIAssistView"
                              ShowHeader="true"
-                             HeaderTemplate="{StaticResource headerTemplate}"
                              AssistItems="{Binding AssistItems}" 
                              ItemCopyCommand="{Binding CopyCommand}"
                              RequestCommand="{Binding AssistViewRequestCommand}"
