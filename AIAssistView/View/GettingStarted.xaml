@@ -9,52 +9,13 @@
     <ContentPage.BindingContext>
         <local:GettingStartedViewModel x:Name="viewModel"/>
     </ContentPage.BindingContext>
-    <ContentPage.Behaviors>
-        <local:SfAssistViewHeaderBehavior/>
-    </ContentPage.Behaviors>
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <DataTemplate x:Key="headerTemplate">
-                <Grid RowDefinitions="45,30" RowSpacing="10">
-                    <Border BackgroundColor="#6750A4"  Stroke="#CAC4D0" HorizontalOptions="Center" >
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="12"/>
-                        </Border.StrokeShape>
-                        <Label Text="&#xe7e1;" FontSize="24" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontFamily="MauiSampleFontIcon" TextColor="White" HeightRequest="45" WidthRequest="45" HorizontalOptions="Center" />
-                    </Border>
-                    <Label Text="Ask AI Anything!" HorizontalOptions="Center" Grid.Row="1" FontFamily="Roboto-Regular" FontSize="16"/>
-                </Grid>
-            </DataTemplate>
-        </ResourceDictionary>
-    </ContentPage.Resources>
-    <ContentPage.Content>
-        <Border x:Name="border"
-            Padding="0"
-            Background="#FFFBFE"
-            Stroke="#CAC4D0"
-            StrokeThickness="{OnPlatform Default=0,MacCatalyst=1,WinUI=1}"  
-            MaximumWidthRequest="{OnPlatform WinUI=650, MacCatalyst=670}">
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="10" />
-            </Border.StrokeShape>
-            <Border.Margin>
-                <OnPlatform x:TypeArguments="thickness:Thickness">
-                    <On Platform="MacCatalyst"
-                    Value="20" />
-                </OnPlatform>
-            </Border.Margin>
-            <Grid>
-                <aiAssist:SfAIAssistView x:Name="sfAIAssistView"
-                             ShowHeader="true"
-                             HeaderTemplate="{StaticResource headerTemplate}"
-                             AssistItems="{Binding AssistItems}"
-                             ItemCopyCommand="{Binding CopyCommand}"
-                             RequestCommand="{Binding AssistViewRequestCommand}"
-                             ItemRetryCommand="{Binding RetryCommand}"
-                             StopRespondingCommand="{Binding StopRespondingCommand}"
-                             Suggestions="{Binding HeaderInfoCollection}">
-                </aiAssist:SfAIAssistView>
-            </Grid>
-        </Border>
-    </ContentPage.Content>
+
+    <aiAssist:SfAIAssistView x:Name="sfAIAssistView"
+            AssistItems="{Binding AssistItems}"
+            ItemCopyCommand="{Binding CopyCommand}"
+            RequestCommand="{Binding AssistViewRequestCommand}"
+            ItemRetryCommand="{Binding RetryCommand}"
+            StopRespondingCommand="{Binding StopRespondingCommand}"
+            Suggestions="{Binding HeaderInfoCollection}">
+    </aiAssist:SfAIAssistView>
 </ContentPage>
