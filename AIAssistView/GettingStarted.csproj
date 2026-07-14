@@ -19,7 +19,6 @@
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<NoWarn>$(NoWarn);CA1416</NoWarn>
 
 		<!-- Display name -->
 		<ApplicationTitle>GettingStarted</ApplicationTitle>
